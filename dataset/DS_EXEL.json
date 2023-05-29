@@ -8,10 +8,8 @@
 		"annotations": [],
 		"type": "Excel",
 		"typeProperties": {
-			"sheetName": "superstore_orders",
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "Superstore_orders.xls",
 				"container": "raw"
 			},
 			"firstRowAsHeader": true
