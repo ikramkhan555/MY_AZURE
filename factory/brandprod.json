@@ -1,0 +1,9 @@
+{
+	"name": "brandprod",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "4314bf63-3334-4860-a160-63f737d9216b",
+		"tenantId": "072bab9d-a16f-4a48-8158-c2cf5c5391e1"
+	}
+}

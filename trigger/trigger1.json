@@ -1,0 +1,25 @@
+{
+	"name": "trigger1",
+	"properties": {
+		"description": "copy data from blob storage to adls",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 2,
+				"startTime": "2023-05-29T18:13:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
