@@ -1,0 +1,56 @@
+{
+	"name": "DS_CSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "card_tran.csv.csv",
+				"container": "raw"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "1",
+				"type": "String"
+			},
+			{
+				"name": "348702330256514",
+				"type": "String"
+			},
+			{
+				"name": "37495066290",
+				"type": "String"
+			},
+			{
+				"name": "9084849",
+				"type": "String"
+			},
+			{
+				"name": "33946",
+				"type": "String"
+			},
+			{
+				"name": "614677375609919",
+				"type": "String"
+			},
+			{
+				"name": "11-02-2018 00:00:00",
+				"type": "String"
+			},
+			{
+				"name": "GENUINE",
+				"type": "String"
+			}
+		]
+	}
+}

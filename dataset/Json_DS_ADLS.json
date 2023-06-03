@@ -1,0 +1,37 @@
+{
+	"name": "Json_DS_ADLS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ADLS_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "realtimecontainer"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"order_id": {
+					"type": "integer"
+				},
+				"order_date": {
+					"type": "string"
+				},
+				"order_customer_id": {
+					"type": "integer"
+				},
+				"order_status": {
+					"type": "string"
+				},
+				"amount": {
+					"type": "integer"
+				}
+			}
+		}
+	}
+}
