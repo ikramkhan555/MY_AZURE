@@ -25,29 +25,30 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "pipeline for copy data from blob storage to adls and delete files from blob after sucessfully copy data",
 				"activities": [
 					{
 						"name": "Validation1",
+						"description": "file is present or not it checks",
 						"type": "Validation",
 						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"dataset": {
-								"referenceName": "DS_EXEL",
+								"referenceName": "DS_CSV",
 								"type": "DatasetReference",
 								"parameters": {}
 							},
-							"timeout": "0.00:00:40",
+							"timeout": "0.00:01:00",
 							"sleep": 10
 						}
 					},
 					{
 						"name": "Get Metadata1",
+						"description": "get meta data ",
 						"type": "GetMetadata",
 						"dependsOn": [
 							{
@@ -67,24 +68,28 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataset": {
-								"referenceName": "DS_EXEL",
+								"referenceName": "DS_CSV",
 								"type": "DatasetReference",
 								"parameters": {}
 							},
 							"fieldList": [
-								"exists"
+								"exists",
+								"columnCount"
 							],
 							"storeSettings": {
 								"type": "AzureBlobStorageReadSettings",
 								"recursive": true,
 								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
 							}
 						}
 					},
 					{
-						"name": "If Condition1",
-						"description": "if file is present then copy else part",
-						"type": "IfCondition",
+						"name": "Copy data1",
+						"description": "copy data from blob to adls",
+						"type": "Copy",
 						"dependsOn": [
 							{
 								"activity": "Get Metadata1",
@@ -93,132 +98,66 @@
 								]
 							}
 						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"expression": {
-								"value": "@activity('Get Metadata1').output.exists",
-								"type": "Expression"
-							},
-							"ifFalseActivities": [
-								{
-									"name": "Fail1",
-									"type": "Fail",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"message": "failed activity",
-										"errorCode": "404"
-									}
-								}
-							],
-							"ifTrueActivities": [
-								{
-									"name": "Copy data1",
-									"description": "from blob to adls copy data",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "ExcelSource",
-											"storeSettings": {
-												"type": "AzureBlobStorageReadSettings",
-												"recursive": true,
-												"enablePartitionDiscovery": false
-											}
-										},
-										"sink": {
-											"type": "ParquetSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "ParquetWriteSettings"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "DS_EXEL",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "Parquet_DS",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									]
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
 								},
-								{
-									"name": "Delete1",
-									"type": "Delete",
-									"dependsOn": [
-										{
-											"activity": "Copy data1",
-											"dependencyConditions": [
-												"Completed"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"dataset": {
-											"referenceName": "DS_EXEL",
-											"type": "DatasetReference",
-											"parameters": {}
-										},
-										"enableLogging": false,
-										"storeSettings": {
-											"type": "AzureBlobStorageReadSettings",
-											"recursive": true,
-											"enablePartitionDiscovery": false
-										}
-									}
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
 								}
-							]
-						}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_CSV",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Json_DS_ADLS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
-				"annotations": [],
-				"lastPublishTime": "2023-05-29T13:04:18Z"
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/DS_EXEL')]",
-				"[concat(variables('factoryId'), '/datasets/Parquet_DS')]"
+				"[concat(variables('factoryId'), '/datasets/DS_CSV')]",
+				"[concat(variables('factoryId'), '/datasets/Json_DS_ADLS')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_EXEL')]",
+			"name": "[concat(parameters('factoryName'), '/DS_CSV')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -227,99 +166,49 @@
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "Excel",
+				"type": "DelimitedText",
 				"typeProperties": {
-					"sheetName": "superstore_orders",
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"fileName": "Superstore_orders.xls",
+						"fileName": "card_tran.csv.csv",
 						"container": "raw"
 					},
-					"firstRowAsHeader": true
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
 				},
 				"schema": [
 					{
-						"name": "Row_ID",
+						"name": "1",
 						"type": "String"
 					},
 					{
-						"name": "Order_ID",
+						"name": "348702330256514",
 						"type": "String"
 					},
 					{
-						"name": "Order_Date",
+						"name": "37495066290",
 						"type": "String"
 					},
 					{
-						"name": "Ship_Date",
+						"name": "9084849",
 						"type": "String"
 					},
 					{
-						"name": "Ship_Mode",
+						"name": "33946",
 						"type": "String"
 					},
 					{
-						"name": "Customer_ID",
+						"name": "614677375609919",
 						"type": "String"
 					},
 					{
-						"name": "Customer_Name",
+						"name": "11-02-2018 00:00:00",
 						"type": "String"
 					},
 					{
-						"name": "Segment",
-						"type": "String"
-					},
-					{
-						"name": "Country/Region",
-						"type": "String"
-					},
-					{
-						"name": "City",
-						"type": "String"
-					},
-					{
-						"name": "State",
-						"type": "String"
-					},
-					{
-						"name": "Postal_Code",
-						"type": "String"
-					},
-					{
-						"name": "Region",
-						"type": "String"
-					},
-					{
-						"name": "Product_ID",
-						"type": "String"
-					},
-					{
-						"name": "Category",
-						"type": "String"
-					},
-					{
-						"name": "Sub_Category",
-						"type": "String"
-					},
-					{
-						"name": "Product_Name",
-						"type": "String"
-					},
-					{
-						"name": "Sales",
-						"type": "String"
-					},
-					{
-						"name": "Quantity",
-						"type": "String"
-					},
-					{
-						"name": "Discount",
-						"type": "String"
-					},
-					{
-						"name": "Profit",
+						"name": "GENUINE",
 						"type": "String"
 					}
 				]
@@ -329,7 +218,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Parquet_DS')]",
+			"name": "[concat(parameters('factoryName'), '/Json_DS_ADLS')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -338,16 +227,33 @@
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "Parquet",
+				"type": "Json",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "empdata",
-						"fileSystem": "landing"
-					},
-					"compressionCodec": "snappy"
+						"fileSystem": "realtimecontainer"
+					}
 				},
-				"schema": []
+				"schema": {
+					"type": "object",
+					"properties": {
+						"order_id": {
+							"type": "integer"
+						},
+						"order_date": {
+							"type": "string"
+						},
+						"order_customer_id": {
+							"type": "integer"
+						},
+						"order_status": {
+							"type": "string"
+						},
+						"amount": {
+							"type": "integer"
+						}
+					}
+				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ADLS_LS')]"
@@ -388,13 +294,12 @@
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "copy data from blob storage to adls",
 				"annotations": [],
 				"runtimeState": "Started",
 				"pipelines": [
 					{
 						"pipelineReference": {
-							"referenceName": "pipeline",
+							"referenceName": "pipeline1",
 							"type": "PipelineReference"
 						},
 						"parameters": {}
@@ -405,14 +310,13 @@
 					"recurrence": {
 						"frequency": "Minute",
 						"interval": 15,
-						"startTime": "2023-05-29T18:13:00",
-						"endTime": "2023-05-30T13:16:48",
-						"timeZone": "India Standard Time"
+						"startTime": "2023-06-03T15:48:00Z",
+						"timeZone": "UTC"
 					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pipeline')]"
+				"[concat(variables('factoryId'), '/pipelines/pipeline1')]"
 			]
 		}
 	]
